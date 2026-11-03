@@ -74,6 +74,14 @@ class sysstat (
     $svc_collect_ensure = true
   }
 
+  if ($facts['os']['family'] == 'RedHat' and Float($facts['os']['release']['major']) >= 8.0)
+  or ($facts['os']['distro'] and $facts['os']['distro']['id'] == 'Debian' and Float($facts['os']['release']['major']) >= 11.0)
+  or ($facts['os']['distro'] and $facts['os']['distro']['id'] == 'Ubuntu' and Float($facts['os']['release']['major']) >= 22.04) {
+    $use_systemd_timers = true
+  } else {
+    $use_systemd_timers = false
+  }
+
   case $facts['os']['family'] {
     'AIX': {
       cron { 'sa1_path_weekday':
@@ -120,9 +128,7 @@ class sysstat (
         ensure => 'installed',
       }
 
-      if ($facts['os']['family'] == 'RedHat' and Float($facts['os']['release']['major']) >= 8.0)
-      or ($facts['os']['distro'] and $facts['os']['distro']['id'] == 'Debian' and Float($facts['os']['release']['major']) >= 11.0 )
-      or ($facts['os']['distro'] and $facts['os']['distro']['id'] == 'Ubuntu' and Float($facts['os']['release']['major']) >= 22.04) {
+      if $use_systemd_timers {
         file { [
             '/etc/systemd/system/sysstat-summary.timer.d',
             '/etc/systemd/system/sysstat-collect.timer.d',
@@ -226,7 +232,7 @@ class sysstat (
       if $facts['os']['family'] == 'Debian' {
         service { 'sysstat':
           ensure => false,
-          enable => false,
+          enable => ($use_systemd_timers and $svc_collect_ensure),
         }
         file { $cron_path2:
           ensure => absent,
