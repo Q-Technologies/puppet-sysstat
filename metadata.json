@@ -7,9 +7,7 @@
   "source": "https://github.com/Q-Technologies/puppet-sysstat.git",
   "project_page": "https://github.com/Q-Technologies/puppet-sysstat",
   "issues_url": "https://github.com/Q-Technologies/puppet-sysstat/issues",
-  "dependencies": [
-
-  ],
+  "dependencies": [],
   "operatingsystem_support": [
     {
       "operatingsystem": "AIX",
@@ -87,7 +85,7 @@
     "sysstat",
     "monitoring"
   ],
-  "pdk-version": "3.0.1",
-  "template-url": "pdk-default#3.0.1",
-  "template-ref": "tags/3.0.1-0-gd13288a"
+  "pdk-version": "4.0.1",
+  "template-url": "pdk-default#4.0.1",
+  "template-ref": "tags/4.0.1-0-g826bc75"
 }

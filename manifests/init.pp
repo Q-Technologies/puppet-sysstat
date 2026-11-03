@@ -2,8 +2,32 @@
 #
 # A module to manage the sysstat configuration
 #
+# @param [String] package The name of the sysstat package to install.
+# @param [String] cron_path The path of the sysstat crontab managed by this class.
+# @param [String] cron_path2 The path of the Debian cron.daily entry to remove.
+# @param [String] conf_path The path of the sysstat configuration file to manage.
+# @param [String] sa1_path The path to the sa1 data collection command.
+# @param [String] sa2_path The path to the sa2 summary generation command.
+# @param [String] sa2_hour The hour at which sa2 generates the daily summary.
+# @param [String] sa2_minute The minute at which sa2 generates the daily summary.
+# @param [String] sa_dir The directory where sysstat activity data is stored.
+# @param [String] sa1_options Options passed to sa1 during data collection.
+# @param [Integer] interval Default collection interval in minutes, used by sa1_interval.
+# @param [Integer] sa1_interval How often sa1 collects data, in minutes.
+# @param [Integer] duration Default collection duration in minutes, used by sa1_duration.
+# @param [Integer] sa1_duration Duration of each sa1 invocation, in minutes.
+# @param [Integer] samples Default number of samples per invocation, used by sa1_samples.
+# @param [Integer] sa1_samples Number of samples collected by each sa1 invocation.
+# @param [String] sa2_options Options passed to sa2 when generating the daily summary.
+# @param [Integer] history Number of days to retain sysstat activity data.
+# @param [Integer] compressafter Age in days after which activity files are compressed.
+# @param [String] sadc_options Options passed to the sadc data collector.
+# @param [String] zip The compression program used for activity files.
+# @param [String] generate_summary Whether to generate the daily summary ('yes' or 'no').
+# @param [String] disable Whether to disable collection and remove its schedule ('yes' or 'no').
+# @param [Integer] sa2_delay_range Maximum random delay before sa2 runs, in seconds.
+# @param [String] sa_umask The umask used for sysstat activity and report files.
 class sysstat (
-  # Class parameters are populated from module hiera data
   String $package,
   String $cron_path,
   String $cron_path2,
@@ -14,7 +38,6 @@ class sysstat (
   String $sa2_minute,
   String $sa_dir,
 
-  # Class parameters are populated from External(hiera)/Defaults/Fail
   String    $sa1_options      = '-S ALL',
   Integer   $interval         = 2,
   Integer   $sa1_interval     = $interval,
@@ -120,32 +143,32 @@ class sysstat (
         file { '/etc/systemd/system/sysstat-collect.timer.d/override.conf':
           ensure  => file,
           content => epp('sysstat/sysstat_collect.timer.override.epp', {
-              sa1_interval => $sa1_interval,
+            sa1_interval => $sa1_interval,
           }),
           notify  => Exec['systemctl daemon-reload'],
         }
         file { '/etc/systemd/system/sysstat-summary.timer.d/override.conf':
           ensure  => file,
           content => epp('sysstat/sysstat_summary.timer.override.epp', {
-              sa2_minute => $sa2_minute,
-              sa2_hour   => $sa2_hour,
+            sa2_minute => $sa2_minute,
+            sa2_hour   => $sa2_hour,
           }),
           notify  => Exec['systemctl daemon-reload'],
         }
         file { '/etc/systemd/system/sysstat-collect.service.d/override.conf':
           ensure  => file,
           content => epp('sysstat/sysstat_collect.service.override.epp', {
-              sa1_path             => $sa1_path,
-              sa1_duration_seconds => $sa1_duration_seconds,
-              sa1_samples          => $sa1_samples,
+            sa1_path             => $sa1_path,
+            sa1_duration_seconds => $sa1_duration_seconds,
+            sa1_samples          => $sa1_samples,
           }),
           notify  => Exec['systemctl daemon-reload'],
         }
         file { '/etc/systemd/system/sysstat-summary.service.d/override.conf':
           ensure  => file,
           content => epp('sysstat/sysstat_summary.service.override.epp', {
-              sa2_path    => $sa2_path,
-              sa2_options => $sa2_options,
+            sa2_path    => $sa2_path,
+            sa2_options => $sa2_options,
           }),
           notify  => Exec['systemctl daemon-reload'],
         }
@@ -163,17 +186,17 @@ class sysstat (
         file { $cron_path:
           ensure  => $file_ensure,
           content => epp('sysstat/crontab.epp', {
-              sa1_path             => $sa1_path,
-              sa1_options          => $sa1_options,
-              sa1_interval         => $sa1_interval,
-              sa1_duration         => $sa1_duration,
-              sa1_duration_seconds => $sa1_duration_seconds,
-              sa1_samples          => $sa1_samples,
-              sa2_path             => $sa2_path,
-              sa2_options          => $sa2_options,
-              sa2_minute           => $sa2_minute,
-              sa2_hour             => $sa2_hour,
-              generate_summary     => $generate_summary,
+            sa1_path             => $sa1_path,
+            sa1_options          => $sa1_options,
+            sa1_interval         => $sa1_interval,
+            sa1_duration         => $sa1_duration,
+            sa1_duration_seconds => $sa1_duration_seconds,
+            sa1_samples          => $sa1_samples,
+            sa2_path             => $sa2_path,
+            sa2_options          => $sa2_options,
+            sa2_minute           => $sa2_minute,
+            sa2_hour             => $sa2_hour,
+            generate_summary     => $generate_summary,
           }),
         }
       }
@@ -181,13 +204,13 @@ class sysstat (
       file { $conf_path:
         ensure  => file,
         content => epp('sysstat/sysconfig.epp', {
-            history         => $history,
-            compressafter   => $compressafter,
-            sa_dir          => $sa_dir,
-            sa2_delay_range => $sa2_delay_range,
-            sadc_options    => $sadc_options,
-            sa_umask        => $sa_umask,
-            zip             => $zip,
+          history         => $history,
+          compressafter   => $compressafter,
+          sa_dir          => $sa_dir,
+          sa2_delay_range => $sa2_delay_range,
+          sadc_options    => $sadc_options,
+          sa_umask        => $sa_umask,
+          zip             => $zip,
         }),
         require => Package[$package],
       }
